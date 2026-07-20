@@ -44,19 +44,38 @@ jobs:
           test -f INSFullSaver/settings.gradle
 
       - name: Build debug APK
+        id: build
+        continue-on-error: true
         working-directory: INSFullSaver
-        run: gradle --no-daemon :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon :app:assembleDebug 2>&1 | tee ../insdl-build.log
 
       - name: Prepare artifact
+        if: steps.build.outcome == 'success'
         run: |
           mkdir -p artifact
           cp INSFullSaver/app/build/outputs/apk/debug/app-debug.apk artifact/INSDL-v1.2.0-debug.apk
           sha256sum artifact/INSDL-v1.2.0-debug.apk > artifact/INSDL-v1.2.0-debug.apk.sha256
 
       - name: Upload APK
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: INSDL-v1.2.0-debug-apk
           path: artifact/*
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: INSDL-build-log
+          path: insdl-build.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail when build failed
+        if: steps.build.outcome != 'success'
+        run: exit 1
