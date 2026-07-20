@@ -38,11 +38,11 @@ final class MediaSaver {
             InstagramClient.MediaItem item = post.media.get(index);
             String filename = String.format(Locale.US, "%s_%02d.%s",
                     post.shortcode, index + 1, item.extension());
-            callback.onProgress(saved, total, "正在保存 " + (index + 1) + "/" + total);
+            callback.onProgress(saved, total, "Downloading " + (index + 1) + " / " + total);
             saveOne(item, filename, post.shortcode, postUrl);
             saved++;
             log.line("Saved " + filename);
-            callback.onProgress(saved, total, "已保存 " + saved + "/" + total);
+            callback.onProgress(saved, total, "Saved " + saved + " / " + total);
         }
         return saved;
     }
@@ -57,10 +57,10 @@ final class MediaSaver {
         int status = connection.getResponseCode();
         if (status < 200 || status >= 300) {
             connection.disconnect();
-            throw new IOException("下载媒体失败（HTTP " + status + "）");
+            throw new IOException("Media download failed (HTTP " + status + ")");
         }
 
-        String folder = Environment.DIRECTORY_PICTURES + "/INS全图保存/" + shortcode;
+        String folder = Environment.DIRECTORY_PICTURES + "/INSDL/" + shortcode;
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.MIME_TYPE, item.mimeType());
@@ -79,14 +79,14 @@ final class MediaSaver {
         Uri uri = resolver.insert(collection, values);
         if (uri == null) {
             connection.disconnect();
-            throw new IOException("Android 媒体库拒绝创建文件");
+            throw new IOException("Android MediaStore refused to create the file");
         }
 
         boolean success = false;
         try (InputStream input = new BufferedInputStream(connection.getInputStream());
              OutputStream output = resolver.openOutputStream(uri, "w")) {
             if (output == null) {
-                throw new IOException("无法写入 Android 媒体库");
+                throw new IOException("Unable to write to Android MediaStore");
             }
             byte[] buffer = new byte[64 * 1024];
             int read;
