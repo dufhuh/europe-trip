@@ -4,8 +4,8 @@ Daemon will be stopped at the end of the build
 > Task :app:preDebugBuild UP-TO-DATE
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :app:javaPreCompileDebug
-> Task :app:generateDebugResValues
 > Task :app:checkDebugAarMetadata
+> Task :app:generateDebugResValues
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
@@ -17,17 +17,17 @@ Daemon will be stopped at the end of the build
 > Task :app:processDebugManifest
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
-> Task :app:processDebugManifestForPackage
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
 > Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
 > Task :app:processDebugJavaRes NO-SOURCE
+> Task :app:processDebugManifestForPackage
 > Task :app:checkDebugDuplicateClasses
 > Task :app:mergeDebugJniLibFolders
 > Task :app:mergeExtDexDebug
-> Task :app:mergeDebugJavaResource
 > Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJavaResource
 > Task :app:mergeDebugNativeLibs NO-SOURCE
 > Task :app:stripDebugDebugSymbols NO-SOURCE
 > Task :app:processDebugResources
@@ -41,7 +41,7 @@ Daemon will be stopped at the end of the build
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/android_build-1784534939062.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/android_build-1784535084510.json
 
-BUILD SUCCESSFUL in 11s
+BUILD SUCCESSFUL in 16s
 32 actionable tasks: 32 executed
