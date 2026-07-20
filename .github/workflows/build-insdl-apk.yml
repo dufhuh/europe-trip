@@ -39,6 +39,7 @@ jobs:
       - name: Restore and verify project archive
         run: |
           cat insdl-build-v13/source.b64.part* | base64 --decode > insdl-source.zip
+          rm -rf INSFullSaver
           unzip -q insdl-source.zip
           test -f INSFullSaver/settings.gradle
           grep -q "versionName '1.3.0'" INSFullSaver/app/build.gradle
