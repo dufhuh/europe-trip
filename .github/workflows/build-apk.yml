@@ -16,8 +16,10 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout Android source branch
         uses: actions/checkout@v4
+        with:
+          ref: build-ins-full-saver
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -35,9 +37,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
-      - name: Extract source
-        run: unzip -q INSFullSaver-source.zip
 
       - name: Build debug APK
         working-directory: INSFullSaver
