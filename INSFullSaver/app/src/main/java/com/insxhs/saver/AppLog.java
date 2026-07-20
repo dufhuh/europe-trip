@@ -1,6 +1,7 @@
 package com.insxhs.saver;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 
 import java.io.BufferedWriter;
@@ -13,15 +14,17 @@ import java.util.Locale;
 
 final class AppLog {
     private static final String FILE_NAME = "last_run.log";
+    private final Context context;
     private final File file;
 
     AppLog(Context context) {
-        file = new File(context.getFilesDir(), FILE_NAME);
+        this.context = context.getApplicationContext();
+        file = new File(this.context.getFilesDir(), FILE_NAME);
     }
 
     synchronized void reset() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
-            writer.write("INSDL " + BuildConfig.VERSION_NAME + "\n");
+            writer.write("INSDL " + appVersion() + "\n");
             writer.write("Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n");
             writer.write("Device: " + Build.MANUFACTURER + " " + Build.MODEL + "\n");
             writer.write("Cookies: content intentionally omitted\n");
@@ -44,6 +47,15 @@ final class AppLog {
                     java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception exception) {
             return "暂无诊断日志";
+        }
+    }
+
+    private String appVersion() {
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return info.versionName == null ? "unknown" : info.versionName;
+        } catch (Exception ignored) {
+            return "unknown";
         }
     }
 
