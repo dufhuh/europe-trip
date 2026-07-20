@@ -21,7 +21,7 @@ final class AppLog {
 
     synchronized void reset() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
-            writer.write("INS Full Saver 1.0.0\n");
+            writer.write("INSDL " + BuildConfig.VERSION_NAME + "\n");
             writer.write("Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n");
             writer.write("Device: " + Build.MANUFACTURER + " " + Build.MODEL + "\n");
             writer.write("Cookies: content intentionally omitted\n");
@@ -39,7 +39,9 @@ final class AppLog {
 
     synchronized String read() {
         try {
-            return new String(java.nio.file.Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+            return new String(
+                    java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception exception) {
             return "暂无诊断日志";
         }
