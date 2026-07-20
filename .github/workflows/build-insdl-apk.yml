@@ -36,13 +36,17 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Restore project archive
+      - name: Restore and normalize project archive
         run: |
           cat insdl-build/source.b64.part* | base64 --decode > insdl-source.zip
           rm -rf INSFullSaver
           unzip -q insdl-source.zip
           sed -i 's/android:strokeLineWidth=/android:strokeWidth=/' INSFullSaver/app/src/main/res/drawable/ic_launcher_foreground.xml
-          test -f INSFullSaver/settings.gradle
+          sed -i 's/versionCode 2/versionCode 3/' INSFullSaver/app/build.gradle
+          sed -i "s/versionName '1.1.0'/versionName '1.2.0'/" INSFullSaver/app/build.gradle
+          grep -q "versionName '1.2.0'" INSFullSaver/app/build.gradle
+          grep -q 'Pictures/INSDL/' INSFullSaver/app/src/main/java/com/insxhs/saver/MediaSaver.java
+          grep -q '<string name="app_name">INSDL</string>' INSFullSaver/app/src/main/res/values/strings.xml
 
       - name: Build debug APK
         id: build
