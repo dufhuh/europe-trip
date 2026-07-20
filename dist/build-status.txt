@@ -1,0 +1,2 @@
+source_outcome=failure
+build_outcome=skipped
