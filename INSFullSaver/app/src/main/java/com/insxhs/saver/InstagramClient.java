@@ -23,7 +23,9 @@ final class InstagramClient {
             "https?://(?:www\\.)?instagram\\.com/(?:p|reel|reels|tv)/([A-Za-z0-9_-]+)",
             Pattern.CASE_INSENSITIVE);
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 " +
+    private static final BigInteger BASE = BigInteger.valueOf(64L);
+    private static final BigInteger MAX_MEDIA_ID = BigInteger.valueOf(Long.MAX_VALUE);
+    private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36";
 
     static final class MediaItem {
@@ -81,23 +83,47 @@ final class InstagramClient {
         if (!matcher.find()) {
             throw new IOException("无法提取帖子编号");
         }
-        String shortcode = matcher.group(1);
-        String mediaId = shortcodeToMediaId(shortcode);
-        String endpoint = "https://www.instagram.com/api/v1/media/" + mediaId + "/info/";
-        log.line("Fetching post metadata for shortcode " + shortcode);
 
-        HttpURLConnection connection = open(endpoint, postUrl);
-        int status = connection.getResponseCode();
-        String response = readText(status >= 400 ? connection.getErrorStream() : connection.getInputStream());
-        connection.disconnect();
-
-        if (status == 401 || status == 403) {
-            throw new IOException("Instagram 拒绝了登录态（HTTP " + status + "）。请重新导出 cookies。");
-        }
-        if (status < 200 || status >= 300) {
-            throw new IOException("读取帖子失败（HTTP " + status + "）：" + shortError(response));
+        String rawShortcode = matcher.group(1);
+        List<String> candidates = shortcodeCandidates(rawShortcode);
+        if (!candidates.get(0).equals(rawShortcode)) {
+            log.line("Removed appended share token from shortcode: " +
+                    rawShortcode.length() + " -> " + candidates.get(0).length() + " chars");
         }
 
+        int lastStatus = 0;
+        String lastResponse = "";
+        for (String shortcode : candidates) {
+            String mediaId = shortcodeToMediaId(shortcode);
+            String endpoint = "https://www.instagram.com/api/v1/media/" + mediaId + "/info/";
+            log.line("Fetching post metadata for shortcode " + shortcode);
+
+            HttpURLConnection connection = open(endpoint, canonicalPostUrl(postUrl, shortcode));
+            int status = connection.getResponseCode();
+            String response = readText(status >= 400
+                    ? connection.getErrorStream()
+                    : connection.getInputStream());
+            connection.disconnect();
+
+            if (status == 401 || status == 403) {
+                throw new IOException("Instagram 拒绝了登录态（HTTP " + status + "）。请重新导出 cookies。");
+            }
+            if (status >= 200 && status < 300) {
+                return parsePostResponse(shortcode, response);
+            }
+
+            lastStatus = status;
+            lastResponse = response;
+            if (!isInvalidMediaId(status, response)) {
+                throw new IOException("读取帖子失败（HTTP " + status + "）：" + shortError(response));
+            }
+        }
+
+        throw new IOException("读取帖子失败（HTTP " + lastStatus + "）：" + shortError(lastResponse));
+    }
+
+    private Post parsePostResponse(String shortcode, String response)
+            throws JSONException, IOException {
         JSONObject root = new JSONObject(response);
         JSONArray items = root.optJSONArray("items");
         if (items == null || items.length() == 0) {
@@ -198,17 +224,53 @@ final class InstagramClient {
         return bestUrl;
     }
 
+    private static List<String> shortcodeCandidates(String raw) throws IOException {
+        BigInteger value = BigInteger.ZERO;
+        int longestValidLength = 0;
+        for (int i = 0; i < raw.length(); i++) {
+            int digit = ALPHABET.indexOf(raw.charAt(i));
+            if (digit < 0) {
+                break;
+            }
+            value = value.multiply(BASE).add(BigInteger.valueOf(digit));
+            if (value.compareTo(MAX_MEDIA_ID) > 0) {
+                break;
+            }
+            longestValidLength = i + 1;
+        }
+        if (longestValidLength < 5) {
+            throw new IOException("帖子编号格式无效");
+        }
+
+        List<String> candidates = new ArrayList<>();
+        for (int length = longestValidLength; length >= 5; length--) {
+            candidates.add(raw.substring(0, length));
+        }
+        return candidates;
+    }
+
     private static String shortcodeToMediaId(String shortcode) throws IOException {
         BigInteger value = BigInteger.ZERO;
-        BigInteger base = BigInteger.valueOf(64L);
         for (int i = 0; i < shortcode.length(); i++) {
             int digit = ALPHABET.indexOf(shortcode.charAt(i));
             if (digit < 0) {
                 throw new IOException("帖子编号包含无效字符");
             }
-            value = value.multiply(base).add(BigInteger.valueOf(digit));
+            value = value.multiply(BASE).add(BigInteger.valueOf(digit));
         }
         return value.toString();
+    }
+
+    private static boolean isInvalidMediaId(int status, String response) {
+        if (status != 400 && status != 404) {
+            return false;
+        }
+        return response != null && response.toLowerCase().contains("invalid media_id");
+    }
+
+    private static String canonicalPostUrl(String originalUrl, String shortcode) {
+        String type = originalUrl.toLowerCase().contains("/reel") ? "reel" : "p";
+        return "https://www.instagram.com/" + type + "/" + shortcode + "/";
     }
 
     private static String readText(InputStream stream) throws IOException {
