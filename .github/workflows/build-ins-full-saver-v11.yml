@@ -72,12 +72,15 @@ jobs:
         if: always()
         run: |
           mkdir -p dist
+          rm -f dist/apk-b64-part-*
           echo "source_outcome=${{ steps.source.outcome }}" > dist/build-status.txt
           echo "build_outcome=${{ steps.android_build.outcome }}" >> dist/build-status.txt
           test -f build.log && cp build.log dist/build.log || true
           if test -f INSFullSaver/app/build/outputs/apk/debug/app-debug.apk; then
             cp INSFullSaver/app/build/outputs/apk/debug/app-debug.apk dist/INSFullSaver-v1.1.0.apk
             sha256sum dist/INSFullSaver-v1.1.0.apk > dist/INSFullSaver-v1.1.0.apk.sha256
+            wc -c < dist/INSFullSaver-v1.1.0.apk > dist/apk-size.txt
+            base64 -w 0 dist/INSFullSaver-v1.1.0.apk | split -b 5000 -d -a 2 - dist/apk-b64-part-
           fi
 
       - name: Upload APK artifact
