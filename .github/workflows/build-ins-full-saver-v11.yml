@@ -8,6 +8,9 @@ on:
     paths:
       - 'android-build/**'
       - '.github/workflows/build-ins-full-saver-v11.yml'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -92,7 +95,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish result to build branch
-        if: always()
+        if: always() && github.event_name == 'push'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
