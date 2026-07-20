@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.3.0";
+    private static final String VERSION = "1.3.1";
 
     private static final int BG = Color.parseColor("#0B1020");
     private static final int PANEL = Color.parseColor("#151B2F");
@@ -100,9 +100,20 @@ public final class MainActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(20), dp(12), dp(20), dp(34));
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            int statusBar = insets.getSystemWindowInsetTop();
+            int navigationBar = insets.getSystemWindowInsetBottom();
+            view.setPadding(
+                    dp(20),
+                    statusBar + dp(10),
+                    dp(20),
+                    Math.max(dp(34), navigationBar + dp(20)));
+            return insets;
+        });
         scroll.addView(root, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.requestApplyInsets();
 
         root.addView(buildTopBar());
         add(root, buildHero(), 22);
