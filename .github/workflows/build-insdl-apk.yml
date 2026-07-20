@@ -41,6 +41,7 @@ jobs:
           cat insdl-build/source.b64.part* | base64 --decode > insdl-source.zip
           rm -rf INSFullSaver
           unzip -q insdl-source.zip
+          sed -i 's/android:strokeLineWidth=/android:strokeWidth=/' INSFullSaver/app/src/main/res/drawable/ic_launcher_foreground.xml
           test -f INSFullSaver/settings.gradle
 
       - name: Build debug APK
