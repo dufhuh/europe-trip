@@ -1,2 +1,2 @@
-source_outcome=failure
-build_outcome=skipped
+source_outcome=success
+build_outcome=success
