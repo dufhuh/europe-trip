@@ -1,0 +1,60 @@
+name: Build INS Full Saver v1.1 APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - build-ins-full-saver-v11
+    paths:
+      - 'android-build/**'
+      - '.github/workflows/build-ins-full-saver-v11.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct Android source archive
+        run: |
+          cat android-build/part*.b64 | base64 --decode > INSFullSaver-v1.1.0-source.zip
+          echo '03db00a2119197a40de993c9b5a8df649394a3c7a8386a45b8ec1ee2a3766bdc  INSFullSaver-v1.1.0-source.zip' | sha256sum -c -
+          unzip -q INSFullSaver-v1.1.0-source.zip
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build installable APK
+        working-directory: INSFullSaver
+        run: gradle --no-daemon assembleDebug
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p dist
+          cp INSFullSaver/app/build/outputs/apk/debug/app-debug.apk dist/INSFullSaver-v1.1.0.apk
+          sha256sum dist/INSFullSaver-v1.1.0.apk > dist/INSFullSaver-v1.1.0.apk.sha256
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: INSFullSaver-v1.1.0-apk
+          path: dist/*
+          if-no-files-found: error
