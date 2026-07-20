@@ -39,6 +39,7 @@ jobs:
       - name: Restore project archive
         run: |
           cat insdl-build/source.b64.part* | base64 --decode > insdl-source.zip
+          rm -rf INSFullSaver
           unzip -q insdl-source.zip
           test -f INSFullSaver/settings.gradle
 
