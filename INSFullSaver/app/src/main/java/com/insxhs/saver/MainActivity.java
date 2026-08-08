@@ -10,9 +10,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -41,19 +39,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.3.1";
+    private static final String VERSION = "1.3.3";
 
-    private static final int BG = Color.parseColor("#0B1020");
-    private static final int PANEL = Color.parseColor("#151B2F");
-    private static final int PANEL_2 = Color.parseColor("#1C2440");
-    private static final int TEXT = Color.parseColor("#F7F8FF");
-    private static final int MUTED = Color.parseColor("#A6AEC4");
-    private static final int LINE = Color.parseColor("#2A3458");
-    private static final int PURPLE = Color.parseColor("#8B5CF6");
-    private static final int BLUE = Color.parseColor("#4F7CF6");
-    private static final int CYAN = Color.parseColor("#35C4FF");
-    private static final int GREEN = Color.parseColor("#34D399");
-    private static final int RED = Color.parseColor("#FF6B7A");
+    private static final int BG = Color.parseColor("#FAFAF8");
+    private static final int PANEL = Color.parseColor("#FFFFFF");
+    private static final int PANEL_2 = Color.parseColor("#F2F2F0");
+    private static final int TEXT = Color.parseColor("#0D0D0D");
+    private static final int MUTED = Color.parseColor("#6B6B6B");
+    private static final int LINE = Color.parseColor("#E3E3DF");
+    private static final int ICON = Color.parseColor("#535353");
+    private static final int GREEN = Color.parseColor("#268A63");
+    private static final int RED = Color.parseColor("#D24B4B");
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final AtomicBoolean busy = new AtomicBoolean(false);
@@ -72,7 +68,8 @@ public final class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
-        getWindow().getDecorView().setSystemUiVisibility(0);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         cookieStore = new CookieStore(this);
         log = new AppLog(this);
         createUi();
@@ -99,15 +96,15 @@ public final class MainActivity extends Activity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(12), dp(20), dp(34));
+        root.setPadding(dp(20), dp(10), dp(20), dp(30));
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             int statusBar = insets.getSystemWindowInsetTop();
             int navigationBar = insets.getSystemWindowInsetBottom();
             view.setPadding(
                     dp(20),
-                    statusBar + dp(10),
+                    statusBar + dp(8),
                     dp(20),
-                    Math.max(dp(34), navigationBar + dp(20)));
+                    Math.max(dp(30), navigationBar + dp(18)));
             return insets;
         });
         scroll.addView(root, new ScrollView.LayoutParams(
@@ -116,32 +113,32 @@ public final class MainActivity extends Activity {
         root.requestApplyInsets();
 
         root.addView(buildTopBar());
-        add(root, buildHero(), 22);
-        add(root, buildLinkField(), 22);
+        add(root, buildHero(), 32);
+        add(root, buildLinkField(), 30);
 
-        downloadButton = gradientButton("Download     ↓");
+        downloadButton = primaryButton("Download   ↓");
         downloadButton.setOnClickListener(v -> startDownload(urlInput.getText().toString()));
         add(root, downloadButton, 14);
 
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(100);
         progress.setVisibility(View.GONE);
-        progress.setProgressTintList(ColorStateList.valueOf(CYAN));
-        progress.setIndeterminateTintList(ColorStateList.valueOf(CYAN));
+        progress.setProgressTintList(ColorStateList.valueOf(TEXT));
+        progress.setIndeterminateTintList(ColorStateList.valueOf(TEXT));
         add(root, progress, 12);
 
-        add(root, buildShortcuts(), 18);
-        add(root, buildRecentHeader(), 26);
+        add(root, buildShortcuts(), 20);
+        add(root, buildRecentHeader(), 30);
 
         recentList = new LinearLayout(this);
         recentList.setOrientation(LinearLayout.VERTICAL);
-        add(root, recentList, 10);
+        add(root, recentList, 12);
         renderRecent();
 
         status = text("Ready", 13, false, MUTED);
         status.setGravity(Gravity.CENTER);
         status.setTextIsSelectable(true);
-        add(root, status, 22);
+        add(root, status, 24);
 
         setContentView(scroll);
     }
@@ -168,21 +165,16 @@ public final class MainActivity extends Activity {
         hero.setOrientation(LinearLayout.VERTICAL);
         hero.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        TextView icon = text("↓", 42, true, TEXT);
-        icon.setGravity(Gravity.CENTER);
-        icon.setBackground(gradientRing());
-        hero.addView(icon, new LinearLayout.LayoutParams(dp(108), dp(108)));
-
-        TextView title = text("Instagram Downloader", 28, true, TEXT);
+        TextView title = text("Instagram Downloader", 29, true, TEXT);
         title.setGravity(Gravity.CENTER);
-        add(hero, title, 18);
+        hero.addView(title);
 
         TextView subtitle = text(
                 "Paste a link to download all images\nfrom Instagram posts and carousels.",
                 14, false, MUTED);
         subtitle.setGravity(Gravity.CENTER);
-        subtitle.setLineSpacing(0f, 1.25f);
-        add(hero, subtitle, 9);
+        subtitle.setLineSpacing(0f, 1.28f);
+        add(hero, subtitle, 10);
         return hero;
     }
 
@@ -191,17 +183,17 @@ public final class MainActivity extends Activity {
         shell.setOrientation(LinearLayout.HORIZONTAL);
         shell.setGravity(Gravity.CENTER_VERTICAL);
         shell.setPadding(dp(14), dp(7), dp(7), dp(7));
-        GradientDrawable background = rounded(PANEL, 18);
+        GradientDrawable background = rounded(PANEL, 30);
         background.setStroke(dp(1), LINE);
         shell.setBackground(background);
 
-        TextView linkIcon = text("↗", 20, true, CYAN);
+        TextView linkIcon = text("↗", 19, true, ICON);
         linkIcon.setGravity(Gravity.CENTER);
         shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(34), dp(50)));
 
         urlInput = new EditText(this);
         urlInput.setHint("Paste Instagram link here");
-        urlInput.setHintTextColor(Color.parseColor("#75809D"));
+        urlInput.setHintTextColor(Color.parseColor("#8A8A86"));
         urlInput.setTextColor(TEXT);
         urlInput.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         urlInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
@@ -209,11 +201,13 @@ public final class MainActivity extends Activity {
         urlInput.setBackground(null);
         shell.addView(urlInput, new LinearLayout.LayoutParams(0, dp(54), 1f));
 
-        TextView paste = text("▣", 22, false, TEXT);
+        TextView paste = text("Paste", 14, true, TEXT);
         paste.setGravity(Gravity.CENTER);
-        paste.setBackground(rounded(PANEL_2, 13));
+        GradientDrawable pasteBackground = rounded(BG, 24);
+        pasteBackground.setStroke(dp(1), LINE);
+        paste.setBackground(pasteBackground);
         paste.setOnClickListener(v -> pasteFromClipboard());
-        shell.addView(paste, new LinearLayout.LayoutParams(dp(50), dp(50)));
+        shell.addView(paste, new LinearLayout.LayoutParams(dp(78), dp(48)));
         return shell;
     }
 
@@ -221,32 +215,32 @@ public final class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
 
-        View instagram = shortcut("◎", "Open Instagram", "Share to INSDL", PURPLE);
+        View instagram = shortcut("◎", "Open Instagram", "Share to INSDL");
         instagram.setOnClickListener(v -> openInstagram());
-        row.addView(instagram, new LinearLayout.LayoutParams(0, dp(96), 1f));
+        row.addView(instagram, new LinearLayout.LayoutParams(0, dp(94), 1f));
 
         String cookieSub = cookieStore.existsAndValid() ? "Valid" : "Manage Cookies";
-        View cookies = shortcut("▣", "Cookies", cookieSub, CYAN);
+        View cookies = shortcut("▣", "Cookies", cookieSub);
         cookies.setOnClickListener(v -> chooseCookieFile());
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dp(96), 1f);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dp(94), 1f);
         params.leftMargin = dp(10);
         row.addView(cookies, params);
         return row;
     }
 
-    private View shortcut(String symbol, String title, String subtitle, int accent) {
+    private View shortcut(String symbol, String title, String subtitle) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(dp(13), dp(13), dp(13), dp(13));
-        GradientDrawable background = rounded(PANEL, 18);
+        card.setPadding(dp(12), dp(12), dp(10), dp(12));
+        GradientDrawable background = rounded(PANEL, 24);
         background.setStroke(dp(1), LINE);
         card.setBackground(background);
 
-        TextView icon = text(symbol, 23, true, accent);
+        TextView icon = text(symbol, 22, true, ICON);
         icon.setGravity(Gravity.CENTER);
-        icon.setBackground(rounded(PANEL_2, 13));
-        card.addView(icon, new LinearLayout.LayoutParams(dp(46), dp(46)));
+        icon.setBackground(rounded(PANEL_2, 20));
+        card.addView(icon, new LinearLayout.LayoutParams(dp(44), dp(44)));
 
         LinearLayout labels = new LinearLayout(this);
         labels.setOrientation(LinearLayout.VERTICAL);
@@ -256,6 +250,10 @@ public final class MainActivity extends Activity {
         card.addView(labels, labelParams);
         labels.addView(text(title, 13, true, TEXT));
         add(labels, text(subtitle, 11, false, MUTED), 4);
+
+        TextView chevron = text("›", 22, false, MUTED);
+        chevron.setGravity(Gravity.CENTER);
+        card.addView(chevron, new LinearLayout.LayoutParams(dp(20), dp(44)));
         return card;
     }
 
@@ -265,7 +263,7 @@ public final class MainActivity extends Activity {
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.addView(text("Recent Downloads", 17, true, TEXT),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView all = text("View All", 13, true, CYAN);
+        TextView all = text("View All  ›", 13, false, MUTED);
         all.setOnClickListener(v -> showDownloads());
         row.addView(all);
         return row;
@@ -280,7 +278,7 @@ public final class MainActivity extends Activity {
             TextView empty = text("No downloads yet", 14, false, MUTED);
             empty.setGravity(Gravity.CENTER);
             empty.setPadding(0, dp(24), 0, dp(24));
-            GradientDrawable background = rounded(PANEL, 18);
+            GradientDrawable background = rounded(PANEL, 24);
             background.setStroke(dp(1), LINE);
             empty.setBackground(background);
             recentList.addView(empty, new LinearLayout.LayoutParams(
@@ -294,14 +292,14 @@ public final class MainActivity extends Activity {
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setPadding(dp(14), dp(14), dp(14), dp(14));
-        GradientDrawable background = rounded(PANEL, 18);
+        GradientDrawable background = rounded(PANEL, 24);
         background.setStroke(dp(1), LINE);
         card.setBackground(background);
 
-        TextView thumbnail = text("▧", 28, false, CYAN);
+        TextView thumbnail = text("▧", 27, false, ICON);
         thumbnail.setGravity(Gravity.CENTER);
-        thumbnail.setBackground(rounded(PANEL_2, 14));
-        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(58), dp(58)));
+        thumbnail.setBackground(rounded(PANEL_2, 18));
+        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(56), dp(56)));
 
         LinearLayout details = new LinearLayout(this);
         details.setOrientation(LinearLayout.VERTICAL);
@@ -314,7 +312,7 @@ public final class MainActivity extends Activity {
 
         TextView done = text("✓", 16, true, GREEN);
         done.setGravity(Gravity.CENTER);
-        done.setBackground(rounded(Color.parseColor("#183A35"), 999));
+        done.setBackground(rounded(PANEL_2, 999));
         card.addView(done, new LinearLayout.LayoutParams(dp(38), dp(38)));
         recentList.addView(card, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -509,31 +507,18 @@ public final class MainActivity extends Activity {
         status.setTextColor(error ? RED : MUTED);
     }
 
-    private Button gradientButton(String label) {
+    private Button primaryButton(String label) {
         Button button = new Button(this);
         button.setText(label);
         button.setAllCaps(false);
-        button.setTextColor(Color.WHITE);
+        button.setTextColor(TEXT);
         button.setTypeface(Typeface.DEFAULT_BOLD);
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        GradientDrawable background = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{PURPLE, BLUE});
-        background.setCornerRadius(dp(18));
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        GradientDrawable background = rounded(PANEL_2, 30);
+        background.setStroke(dp(1), LINE);
         button.setBackground(background);
         button.setMinHeight(dp(60));
         return button;
-    }
-
-    private LayerDrawable gradientRing() {
-        GradientDrawable outer = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
-                new int[]{Color.parseColor("#FF5CA8"), PURPLE, CYAN});
-        outer.setCornerRadius(dp(28));
-        GradientDrawable inner = rounded(BG, 24);
-        LayerDrawable layer = new LayerDrawable(new Drawable[]{outer, inner});
-        layer.setLayerInset(1, dp(5), dp(5), dp(5), dp(5));
-        return layer;
     }
 
     private GradientDrawable rounded(int color, int radiusDp) {
