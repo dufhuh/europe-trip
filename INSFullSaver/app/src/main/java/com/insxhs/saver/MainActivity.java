@@ -11,6 +11,8 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -19,7 +21,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -39,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.3.3";
+    private static final String VERSION = "1.3.4";
 
     private static final int BG = Color.parseColor("#FAFAF8");
     private static final int PANEL = Color.parseColor("#FFFFFF");
@@ -59,7 +60,7 @@ public final class MainActivity extends Activity {
     private EditText urlInput;
     private TextView status;
     private ProgressBar progress;
-    private Button downloadButton;
+    private TextView downloadButton;
     private LinearLayout recentList;
     private String pendingSharedText;
 
@@ -498,7 +499,6 @@ public final class MainActivity extends Activity {
     private void setControlsEnabled(boolean enabled) {
         downloadButton.setEnabled(enabled);
         urlInput.setEnabled(enabled);
-        downloadButton.setAlpha(enabled ? 1f : 0.65f);
     }
 
     private void setStatus(String message, boolean error) {
@@ -507,18 +507,46 @@ public final class MainActivity extends Activity {
         status.setTextColor(error ? RED : MUTED);
     }
 
-    private Button primaryButton(String label) {
-        Button button = new Button(this);
-        button.setText(label);
-        button.setAllCaps(false);
-        button.setTextColor(TEXT);
-        button.setTypeface(Typeface.DEFAULT_BOLD);
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        GradientDrawable background = rounded(PANEL_2, 30);
-        background.setStroke(dp(1), LINE);
-        button.setBackground(background);
-        button.setMinHeight(dp(60));
+    private TextView primaryButton(String label) {
+        TextView button = text(label, 17, true, TEXT);
+        button.setGravity(Gravity.CENTER);
+        button.setClickable(true);
+        button.setFocusable(true);
+        button.setIncludeFontPadding(false);
+        button.setHeight(dp(60));
+        button.setPadding(dp(18), 0, dp(18), 0);
+        button.setElevation(0f);
+        button.setStateListAnimator(null);
+
+        StateListDrawable states = new StateListDrawable();
+        states.addState(
+                new int[]{-android.R.attr.state_enabled},
+                insetRounded(Color.parseColor("#F5F5F3"), Color.parseColor("#ECECE8"), 30));
+        states.addState(
+                new int[]{android.R.attr.state_pressed},
+                insetRounded(Color.parseColor("#E9E9E6"), Color.parseColor("#D7D7D2"), 30));
+        states.addState(
+                new int[]{},
+                insetRounded(PANEL_2, LINE, 30));
+        button.setBackground(states);
+
+        button.setTextColor(new ColorStateList(
+                new int[][]{
+                        new int[]{-android.R.attr.state_enabled},
+                        new int[]{}
+                },
+                new int[]{
+                        Color.parseColor("#A2A29D"),
+                        TEXT
+                }));
         return button;
+    }
+
+    private InsetDrawable insetRounded(int fill, int stroke, int radiusDp) {
+        GradientDrawable drawable = rounded(fill, radiusDp);
+        drawable.setStroke(dp(1), stroke);
+        int inset = dp(1);
+        return new InsetDrawable(drawable, inset, inset, inset, inset);
     }
 
     private GradientDrawable rounded(int color, int radiusDp) {
