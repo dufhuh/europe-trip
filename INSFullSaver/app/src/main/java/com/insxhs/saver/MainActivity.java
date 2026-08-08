@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.3.4";
+    private static final String VERSION = "1.3.5";
 
     private static final int BG = Color.parseColor("#FAFAF8");
     private static final int PANEL = Color.parseColor("#FFFFFF");
