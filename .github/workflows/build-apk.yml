@@ -1,13 +1,16 @@
-name: Build INS Full Saver APK
+name: Build INSDL APK
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/build-apk.yml'
 
 jobs:
   build:
@@ -16,10 +19,8 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout Android source branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: build-ins-full-saver
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -39,18 +40,17 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build debug APK
-        working-directory: INSFullSaver
         run: gradle --no-daemon assembleDebug
 
       - name: Prepare artifact
         run: |
           mkdir -p dist
-          cp INSFullSaver/app/build/outputs/apk/debug/app-debug.apk dist/INSFullSaver-debug.apk
-          sha256sum dist/INSFullSaver-debug.apk > dist/INSFullSaver-debug.apk.sha256
+          cp app/build/outputs/apk/debug/app-debug.apk dist/INSDL-debug.apk
+          sha256sum dist/INSDL-debug.apk > dist/INSDL-debug.apk.sha256
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: INSFullSaver-debug-apk
+          name: INSDL-debug-apk
           path: dist/*
           if-no-files-found: error

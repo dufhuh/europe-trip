@@ -1,7 +1,22 @@
-# INS Full Saver
+# INSDL
 
-Native Android app for importing an Instagram Netscape cookies.txt file, receiving Instagram post links from Android sharing, downloading carousel images/videos, and saving them directly through Android MediaStore.
+Native Android Instagram post/carousel image downloader.
 
-The previous Europe Trip project has been removed from the current branch. The Android source is stored in `INSFullSaver-source.zip`. GitHub Actions builds a debug APK and publishes it as the `INSFullSaver-debug-apk` workflow artifact.
+## Current version
 
-Cookies and Instagram credentials are never committed to this repository.
+v1.3.5
+
+## Project
+
+- Native Android (Java)
+- minSdk 29
+- targetSdk 35
+- Saves media to `Pictures/INSDL/`
+- Supports pasted Instagram links and Android share-to-INSDL flow
+- Uses an imported `cookies.txt` containing a valid Instagram session
+
+## Build
+
+GitHub Actions builds the debug APK from the `main` branch via `.github/workflows/build-apk.yml`.
+
+The Android project lives directly at the repository root.
