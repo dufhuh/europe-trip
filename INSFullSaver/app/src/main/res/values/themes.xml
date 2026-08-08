@@ -1,13 +1,13 @@
 <resources>
-    <style name="Theme.INSFullSaver" parent="android:style/Theme.Material.NoActionBar">
+    <style name="Theme.INSFullSaver" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:colorAccent">#8B5CF6</item>
-        <item name="android:navigationBarColor">#0B1020</item>
-        <item name="android:statusBarColor">#0B1020</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:windowBackground">#0B1020</item>
+        <item name="android:colorAccent">#0D0D0D</item>
+        <item name="android:navigationBarColor">#FAFAF8</item>
+        <item name="android:statusBarColor">#FAFAF8</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">#FAFAF8</item>
     </style>
 </resources>
