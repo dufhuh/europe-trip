@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.4.0";
+    private static final String VERSION = "1.4.1";
 
     private static final int BG = Color.parseColor("#FAFAF8");
     private static final int PANEL = Color.parseColor("#FFFFFF");
@@ -187,12 +187,12 @@ public final class MainActivity extends Activity {
         LinearLayout shell = new LinearLayout(this);
         shell.setOrientation(LinearLayout.HORIZONTAL);
         shell.setGravity(Gravity.CENTER_VERTICAL);
-        shell.setPadding(dp(8), dp(6), dp(7), dp(6));
-        shell.setMinimumHeight(dp(58));
-        shell.setBackground(insetRounded(PANEL, LINE, 29));
+        shell.setPadding(dp(14), dp(6), dp(14), dp(6));
+        shell.setMinimumHeight(dp(60));
+        shell.setBackground(insetRounded(PANEL, LINE, 30));
 
-        ImageView linkIcon = circleIcon(R.drawable.ic_link, 38, 18);
-        shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(38), dp(38)));
+        ImageView linkIcon = circleIcon(R.drawable.ic_link, 40, 18);
+        shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(40), dp(40)));
 
         urlInput = new EditText(this);
         urlInput.setHint("Paste Instagram link here");
@@ -202,7 +202,7 @@ public final class MainActivity extends Activity {
         urlInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         urlInput.setSingleLine(true);
         urlInput.setBackground(null);
-        urlInput.setPadding(dp(12), 0, dp(8), 0);
+        urlInput.setPadding(dp(14), 0, dp(10), 0);
         shell.addView(urlInput, new LinearLayout.LayoutParams(0, dp(46), 1f));
 
         TextView paste = text("Paste", 14, true, TEXT);
@@ -220,18 +220,18 @@ public final class MainActivity extends Activity {
         button.setGravity(Gravity.CENTER);
         button.setClickable(true);
         button.setFocusable(true);
-        button.setMinimumHeight(dp(58));
+        button.setMinimumHeight(dp(60));
         button.setElevation(0f);
         button.setStateListAnimator(null);
 
         StateListDrawable states = new StateListDrawable();
         states.addState(
                 new int[]{-android.R.attr.state_enabled},
-                insetRounded(Color.parseColor("#F5F5F3"), Color.parseColor("#ECECE8"), 29));
+                insetRounded(Color.parseColor("#F5F5F3"), Color.parseColor("#ECECE8"), 30));
         states.addState(
                 new int[]{android.R.attr.state_pressed},
-                insetRounded(Color.parseColor("#E9E9E6"), Color.parseColor("#D7D7D2"), 29));
-        states.addState(new int[]{}, insetRounded(PANEL_2, LINE, 29));
+                insetRounded(Color.parseColor("#E9E9E6"), Color.parseColor("#D7D7D2"), 30));
+        states.addState(new int[]{}, insetRounded(PANEL_2, LINE, 30));
         button.setBackground(states);
 
         TextView label = text("Download", 17, true, TEXT);
@@ -260,8 +260,8 @@ public final class MainActivity extends Activity {
         divider.setBackgroundColor(LINE);
         LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
-        dividerParams.leftMargin = dp(14);
-        dividerParams.rightMargin = dp(14);
+        dividerParams.leftMargin = dp(18);
+        dividerParams.rightMargin = dp(18);
         card.addView(divider, dividerParams);
 
         String cookieState = cookieStore.existsAndValid() ? "Valid" : "Not imported";
@@ -276,7 +276,7 @@ public final class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(14), 0, dp(14), 0);
+        row.setPadding(dp(18), 0, dp(18), 0);
         row.setClickable(true);
         row.setFocusable(true);
 
@@ -325,10 +325,10 @@ public final class MainActivity extends Activity {
         if (id == null || id.isEmpty()) {
             TextView empty = text("No downloads yet", 14, false, MUTED);
             empty.setGravity(Gravity.CENTER);
-            empty.setPadding(0, dp(22), 0, dp(22));
-            empty.setBackground(insetRounded(PANEL, LINE, 22));
+            empty.setPadding(0, 0, 0, 0);
+            empty.setBackground(insetRounded(PANEL, LINE, 24));
             recentList.addView(empty, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
             return;
         }
         int count = prefs.getInt("last_count", 0);
@@ -337,17 +337,17 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(dp(14), dp(12), dp(14), dp(12));
-        card.setBackground(insetRounded(PANEL, LINE, 22));
+        card.setPadding(dp(18), 0, dp(18), 0);
+        card.setBackground(insetRounded(PANEL, LINE, 24));
 
-        ImageView thumbnail = circleIcon(R.drawable.ic_image, 44, 21);
-        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(44), dp(44)));
+        ImageView thumbnail = circleIcon(R.drawable.ic_image, 46, 21);
+        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(46), dp(46)));
 
         LinearLayout details = new LinearLayout(this);
         details.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        detailsParams.leftMargin = dp(12);
+        detailsParams.leftMargin = dp(14);
         card.addView(details, detailsParams);
         TextView idText = text(id, 15, true, TEXT);
         idText.setSingleLine(true);
@@ -355,10 +355,10 @@ public final class MainActivity extends Activity {
         details.addView(idText);
         add(details, text(count + " files  ·  " + time, 12, false, MUTED), 5);
 
-        ImageView done = circleIcon(R.drawable.ic_check, 36, 17);
-        card.addView(done, new LinearLayout.LayoutParams(dp(36), dp(36)));
+        ImageView done = circleIcon(R.drawable.ic_check, 38, 17);
+        card.addView(done, new LinearLayout.LayoutParams(dp(38), dp(38)));
         recentList.addView(card, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
     }
 
     private void handleIntent(Intent intent) {

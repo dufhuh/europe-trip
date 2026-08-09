@@ -4,7 +4,7 @@ Native Android Instagram post/carousel image downloader.
 
 ## Current version
 
-v1.4.0
+v1.4.1
 
 ## Project
 
