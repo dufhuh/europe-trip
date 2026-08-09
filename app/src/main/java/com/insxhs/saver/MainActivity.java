@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.4.1";
+    private static final String VERSION = "1.4.2";
 
     private static final int BG = Color.parseColor("#FAFAF8");
     private static final int PANEL = Color.parseColor("#FFFFFF");
@@ -187,9 +187,9 @@ public final class MainActivity extends Activity {
         LinearLayout shell = new LinearLayout(this);
         shell.setOrientation(LinearLayout.HORIZONTAL);
         shell.setGravity(Gravity.CENTER_VERTICAL);
-        shell.setPadding(dp(14), dp(6), dp(14), dp(6));
         shell.setMinimumHeight(dp(60));
         shell.setBackground(insetRounded(PANEL, LINE, 30));
+        shell.setPadding(dp(14), dp(6), dp(14), dp(6));
 
         ImageView linkIcon = circleIcon(R.drawable.ic_link, 40, 18);
         shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(40), dp(40)));
@@ -325,8 +325,8 @@ public final class MainActivity extends Activity {
         if (id == null || id.isEmpty()) {
             TextView empty = text("No downloads yet", 14, false, MUTED);
             empty.setGravity(Gravity.CENTER);
-            empty.setPadding(0, 0, 0, 0);
             empty.setBackground(insetRounded(PANEL, LINE, 24));
+            empty.setPadding(0, 0, 0, 0);
             recentList.addView(empty, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
             return;
@@ -337,8 +337,8 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(dp(18), 0, dp(18), 0);
         card.setBackground(insetRounded(PANEL, LINE, 24));
+        card.setPadding(dp(18), 0, dp(18), 0);
 
         ImageView thumbnail = circleIcon(R.drawable.ic_image, 46, 21);
         card.addView(thumbnail, new LinearLayout.LayoutParams(dp(46), dp(46)));
