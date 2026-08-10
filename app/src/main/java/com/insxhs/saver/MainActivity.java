@@ -41,15 +41,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.4.2";
+    private static final String VERSION = "1.4.3";
 
-    private static final int BG = Color.parseColor("#FAFAF8");
+    private static final int BG = Color.parseColor("#F7F7F5");
     private static final int PANEL = Color.parseColor("#FFFFFF");
-    private static final int PANEL_2 = Color.parseColor("#F2F2F0");
-    private static final int TEXT = Color.parseColor("#0D0D0D");
-    private static final int MUTED = Color.parseColor("#6B6B6B");
-    private static final int LINE = Color.parseColor("#E3E3DF");
-    private static final int RED = Color.parseColor("#D24B4B");
+    private static final int PANEL_2 = Color.parseColor("#F1F1EF");
+    private static final int TEXT = Color.parseColor("#111111");
+    private static final int MUTED = Color.parseColor("#6F6F6B");
+    private static final int SUBTLE = Color.parseColor("#92928D");
+    private static final int LINE = Color.parseColor("#E5E5E1");
+    private static final int LINE_STRONG = Color.parseColor("#D8D8D3");
+    private static final int RED = Color.parseColor("#C84A4A");
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final AtomicBoolean busy = new AtomicBoolean(false);
@@ -97,14 +99,14 @@ public final class MainActivity extends Activity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(8), dp(20), dp(28));
+        root.setPadding(dp(18), dp(4), dp(18), dp(28));
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             int statusBar = insets.getSystemWindowInsetTop();
             int navigationBar = insets.getSystemWindowInsetBottom();
             view.setPadding(
-                    dp(20),
-                    statusBar + dp(6),
-                    dp(20),
+                    dp(18),
+                    statusBar + dp(4),
+                    dp(18),
                     Math.max(dp(28), navigationBar + dp(18)));
             return insets;
         });
@@ -114,8 +116,8 @@ public final class MainActivity extends Activity {
         root.requestApplyInsets();
 
         root.addView(buildTopBar());
-        add(root, buildHero(), 34);
-        add(root, buildLinkField(), 30);
+        add(root, buildHero(), 20);
+        add(root, buildLinkField(), 22);
 
         downloadButton = primaryButton();
         downloadButton.setOnClickListener(v -> startDownload(urlInput.getText().toString()));
@@ -128,19 +130,19 @@ public final class MainActivity extends Activity {
         progress.setIndeterminateTintList(ColorStateList.valueOf(TEXT));
         add(root, progress, 10);
 
-        add(root, buildQuickActions(), 24);
-        add(root, buildRecentHeader(), 28);
+        add(root, buildQuickActions(), 25);
+        add(root, buildRecentHeader(), 25);
 
         recentList = new LinearLayout(this);
         recentList.setOrientation(LinearLayout.VERTICAL);
-        add(root, recentList, 12);
+        add(root, recentList, 10);
         renderRecent();
 
-        status = text("", 13, false, MUTED);
+        status = text("", 12, false, MUTED);
         status.setGravity(Gravity.CENTER);
         status.setTextIsSelectable(true);
         status.setVisibility(View.GONE);
-        add(root, status, 18);
+        add(root, status, 14);
 
         setContentView(scroll);
     }
@@ -150,36 +152,40 @@ public final class MainActivity extends Activity {
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
 
-        ImageView menu = icon(R.drawable.ic_menu, 22);
-        menu.setPadding(dp(11), dp(11), dp(11), dp(11));
+        ImageView menu = icon(R.drawable.ic_menu, 20);
+        menu.setPadding(dp(10), dp(10), dp(10), dp(10));
         menu.setClickable(true);
         menu.setFocusable(true);
+        menu.setBackground(pressedRounded(Color.TRANSPARENT, PANEL_2, 12));
         menu.setOnClickListener(v -> showSettings());
-        bar.addView(menu, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        bar.addView(menu, new LinearLayout.LayoutParams(dp(44), dp(44)));
 
-        TextView title = text("INSDL", 19, true, TEXT);
+        TextView title = text("INSDL", 16, true, TEXT);
         title.setGravity(Gravity.CENTER);
-        bar.addView(title, new LinearLayout.LayoutParams(0, dp(48), 1f));
-        bar.addView(new View(this), new LinearLayout.LayoutParams(dp(48), dp(48)));
+        title.setIncludeFontPadding(false);
+        bar.addView(title, new LinearLayout.LayoutParams(0, dp(44), 1f));
+        bar.addView(new View(this), new LinearLayout.LayoutParams(dp(44), dp(44)));
         return bar;
     }
 
     private View buildHero() {
         LinearLayout hero = new LinearLayout(this);
         hero.setOrientation(LinearLayout.VERTICAL);
-        hero.setGravity(Gravity.CENTER_HORIZONTAL);
+        hero.setGravity(Gravity.START);
+        hero.setPadding(dp(4), 0, dp(4), 0);
 
-        TextView title = text("Instagram Downloader", 28, true, TEXT);
-        title.setGravity(Gravity.CENTER);
+        TextView title = text("Instagram Downloader", 27, true, TEXT);
+        title.setGravity(Gravity.START);
         title.setIncludeFontPadding(false);
+        title.setLetterSpacing(-0.02f);
         hero.addView(title);
 
         TextView subtitle = text(
-                "Paste a link to download all images from\nInstagram posts and carousels.",
+                "Paste a link to download all images from Instagram posts and carousels.",
                 14, false, MUTED);
-        subtitle.setGravity(Gravity.CENTER);
-        subtitle.setLineSpacing(0f, 1.28f);
-        add(hero, subtitle, 12);
+        subtitle.setGravity(Gravity.START);
+        subtitle.setLineSpacing(0f, 1.38f);
+        add(hero, subtitle, 10);
         return hero;
     }
 
@@ -187,30 +193,32 @@ public final class MainActivity extends Activity {
         LinearLayout shell = new LinearLayout(this);
         shell.setOrientation(LinearLayout.HORIZONTAL);
         shell.setGravity(Gravity.CENTER_VERTICAL);
-        shell.setMinimumHeight(dp(60));
-        shell.setBackground(insetRounded(PANEL, LINE, 30));
-        shell.setPadding(dp(14), dp(6), dp(14), dp(6));
+        shell.setMinimumHeight(dp(56));
+        shell.setBackground(insetRounded(PANEL, LINE, 18));
+        shell.setPadding(dp(12), dp(7), dp(8), dp(7));
 
-        ImageView linkIcon = circleIcon(R.drawable.ic_link, 40, 18);
-        shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(40), dp(40)));
+        ImageView linkIcon = softIcon(R.drawable.ic_link, 34, 18, 11);
+        shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(34), dp(34)));
 
         urlInput = new EditText(this);
         urlInput.setHint("Paste Instagram link here");
-        urlInput.setHintTextColor(Color.parseColor("#8A8A86"));
+        urlInput.setHintTextColor(SUBTLE);
         urlInput.setTextColor(TEXT);
         urlInput.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         urlInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         urlInput.setSingleLine(true);
         urlInput.setBackground(null);
-        urlInput.setPadding(dp(14), 0, dp(10), 0);
-        shell.addView(urlInput, new LinearLayout.LayoutParams(0, dp(46), 1f));
+        urlInput.setPadding(dp(12), 0, dp(8), 0);
+        shell.addView(urlInput, new LinearLayout.LayoutParams(0, dp(40), 1f));
 
-        TextView paste = text("Paste", 14, true, TEXT);
+        TextView paste = text("Paste", 13, true, TEXT);
         paste.setGravity(Gravity.CENTER);
         paste.setIncludeFontPadding(false);
-        paste.setBackground(insetRounded(BG, LINE, 22));
+        paste.setClickable(true);
+        paste.setFocusable(true);
+        paste.setBackground(pressedRounded(BG, Color.parseColor("#EAEAE7"), 12));
         paste.setOnClickListener(v -> pasteFromClipboard());
-        shell.addView(paste, new LinearLayout.LayoutParams(dp(72), dp(44)));
+        shell.addView(paste, new LinearLayout.LayoutParams(dp(66), dp(38)));
         return shell;
     }
 
@@ -220,26 +228,26 @@ public final class MainActivity extends Activity {
         button.setGravity(Gravity.CENTER);
         button.setClickable(true);
         button.setFocusable(true);
-        button.setMinimumHeight(dp(60));
+        button.setMinimumHeight(dp(54));
         button.setElevation(0f);
         button.setStateListAnimator(null);
 
         StateListDrawable states = new StateListDrawable();
         states.addState(
                 new int[]{-android.R.attr.state_enabled},
-                insetRounded(Color.parseColor("#F5F5F3"), Color.parseColor("#ECECE8"), 30));
+                insetRounded(Color.parseColor("#F5F5F3"), Color.parseColor("#ECECE8"), 16));
         states.addState(
                 new int[]{android.R.attr.state_pressed},
-                insetRounded(Color.parseColor("#E9E9E6"), Color.parseColor("#D7D7D2"), 30));
-        states.addState(new int[]{}, insetRounded(PANEL_2, LINE, 30));
+                insetRounded(Color.parseColor("#EAEAE7"), LINE_STRONG, 16));
+        states.addState(new int[]{}, insetRounded(PANEL_2, LINE_STRONG, 16));
         button.setBackground(states);
 
-        TextView label = text("Download", 17, true, TEXT);
+        TextView label = text("Download", 15, true, TEXT);
         label.setIncludeFontPadding(false);
         button.addView(label, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        ImageView download = icon(R.drawable.ic_download, 20);
+        ImageView download = icon(R.drawable.ic_download, 19);
         LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(20), dp(20));
         iconParams.leftMargin = dp(8);
         button.addView(download, iconParams);
@@ -249,58 +257,66 @@ public final class MainActivity extends Activity {
     private View buildQuickActions() {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(insetRounded(PANEL, LINE, 24));
+        card.setBackground(insetRounded(PANEL, LINE, 18));
 
-        View instagram = actionRow(R.drawable.ic_instagram, "Open Instagram", null);
+        View instagram = actionRow(
+                R.drawable.ic_instagram,
+                "Open Instagram",
+                "Share a post to INSDL from Instagram");
         instagram.setOnClickListener(v -> openInstagram());
         card.addView(instagram, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(66)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(68)));
 
         View divider = new View(this);
         divider.setBackgroundColor(LINE);
         LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
-        dividerParams.leftMargin = dp(18);
-        dividerParams.rightMargin = dp(18);
+        dividerParams.leftMargin = dp(58);
+        dividerParams.rightMargin = dp(14);
         card.addView(divider, dividerParams);
 
         String cookieState = cookieStore.existsAndValid() ? "Valid" : "Not imported";
         View cookies = actionRow(R.drawable.ic_cookie, "Cookies", cookieState);
         cookies.setOnClickListener(v -> chooseCookieFile());
         card.addView(cookies, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(66)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(62)));
         return card;
     }
 
-    private View actionRow(int iconRes, String titleText, String trailingText) {
+    private View actionRow(int iconRes, String titleText, String subtitleText) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(18), 0, dp(18), 0);
+        row.setPadding(dp(14), 0, dp(14), 0);
         row.setClickable(true);
         row.setFocusable(true);
 
-        ImageView itemIcon = circleIcon(iconRes, 40, 20);
-        row.addView(itemIcon, new LinearLayout.LayoutParams(dp(40), dp(40)));
+        ImageView itemIcon = softIcon(iconRes, 34, 19, 11);
+        row.addView(itemIcon, new LinearLayout.LayoutParams(dp(34), dp(34)));
 
-        TextView title = text(titleText, 15, true, TEXT);
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        labels.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams labelsParams = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        labelsParams.leftMargin = dp(12);
+        row.addView(labels, labelsParams);
+
+        TextView title = text(titleText, 14, true, TEXT);
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        titleParams.leftMargin = dp(12);
-        row.addView(title, titleParams);
+        title.setIncludeFontPadding(false);
+        labels.addView(title);
 
-        if (trailingText != null) {
-            TextView trailing = text(trailingText, 14, false, MUTED);
-            trailing.setSingleLine(true);
-            LinearLayout.LayoutParams trailingParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            trailingParams.rightMargin = dp(12);
-            row.addView(trailing, trailingParams);
+        if (subtitleText != null && !subtitleText.isEmpty()) {
+            TextView subtitle = text(subtitleText, 12, false, MUTED);
+            subtitle.setSingleLine(true);
+            subtitle.setEllipsize(TextUtils.TruncateAt.END);
+            subtitle.setIncludeFontPadding(false);
+            add(labels, subtitle, 4);
         }
 
-        ImageView chevron = icon(R.drawable.ic_chevron_right, 18);
+        ImageView chevron = icon(R.drawable.ic_chevron_right, 17);
         row.addView(chevron, new LinearLayout.LayoutParams(dp(18), dp(18)));
         return row;
     }
@@ -309,9 +325,13 @@ public final class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.addView(text("Recent Downloads", 17, true, TEXT),
+        row.setPadding(dp(2), 0, dp(2), 0);
+        row.addView(text("Recent Downloads", 16, true, TEXT),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView all = text("View All", 14, false, MUTED);
+        TextView all = text("View all", 13, false, MUTED);
+        all.setClickable(true);
+        all.setFocusable(true);
+        all.setPadding(dp(12), dp(7), 0, dp(7));
         all.setOnClickListener(v -> showDownloads());
         row.addView(all);
         return row;
@@ -323,12 +343,12 @@ public final class MainActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences("history", MODE_PRIVATE);
         String id = prefs.getString("last_id", "");
         if (id == null || id.isEmpty()) {
-            TextView empty = text("No downloads yet", 14, false, MUTED);
-            empty.setGravity(Gravity.CENTER);
-            empty.setBackground(insetRounded(PANEL, LINE, 24));
-            empty.setPadding(0, 0, 0, 0);
+            TextView empty = text("No downloads yet", 13, false, MUTED);
+            empty.setGravity(Gravity.CENTER_VERTICAL);
+            empty.setBackground(insetRounded(PANEL, LINE, 18));
+            empty.setPadding(dp(16), 0, 0, 0);
             recentList.addView(empty, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(78)));
             return;
         }
         int count = prefs.getInt("last_count", 0);
@@ -337,28 +357,31 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setBackground(insetRounded(PANEL, LINE, 24));
-        card.setPadding(dp(18), 0, dp(18), 0);
+        card.setBackground(insetRounded(PANEL, LINE, 18));
+        card.setPadding(dp(14), 0, dp(14), 0);
 
-        ImageView thumbnail = circleIcon(R.drawable.ic_image, 46, 21);
-        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(46), dp(46)));
+        ImageView thumbnail = softIcon(R.drawable.ic_image, 42, 20, 13);
+        card.addView(thumbnail, new LinearLayout.LayoutParams(dp(42), dp(42)));
 
         LinearLayout details = new LinearLayout(this);
         details.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        detailsParams.leftMargin = dp(14);
+        detailsParams.leftMargin = dp(12);
         card.addView(details, detailsParams);
-        TextView idText = text(id, 15, true, TEXT);
+        TextView idText = text(id, 14, true, TEXT);
         idText.setSingleLine(true);
         idText.setEllipsize(TextUtils.TruncateAt.END);
+        idText.setIncludeFontPadding(false);
         details.addView(idText);
-        add(details, text(count + " files  ·  " + time, 12, false, MUTED), 5);
+        TextView meta = text(count + " files  ·  " + time, 12, false, MUTED);
+        meta.setIncludeFontPadding(false);
+        add(details, meta, 4);
 
-        ImageView done = circleIcon(R.drawable.ic_check, 38, 17);
-        card.addView(done, new LinearLayout.LayoutParams(dp(38), dp(38)));
+        ImageView done = softIcon(R.drawable.ic_check, 30, 15, 10);
+        card.addView(done, new LinearLayout.LayoutParams(dp(30), dp(30)));
         recentList.addView(card, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(86)));
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(78)));
     }
 
     private void handleIntent(Intent intent) {
@@ -561,14 +584,21 @@ public final class MainActivity extends Activity {
         return view;
     }
 
-    private ImageView circleIcon(int drawableRes, int containerDp, int visualDp) {
+    private ImageView softIcon(int drawableRes, int containerDp, int visualDp, int radiusDp) {
         ImageView view = new ImageView(this);
         view.setImageResource(drawableRes);
         view.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        view.setBackground(rounded(PANEL_2, 999));
+        view.setBackground(rounded(PANEL_2, radiusDp));
         int padding = Math.max(0, (dp(containerDp) - dp(visualDp)) / 2);
         view.setPadding(padding, padding, padding, padding);
         return view;
+    }
+
+    private StateListDrawable pressedRounded(int normal, int pressed, int radiusDp) {
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed}, rounded(pressed, radiusDp));
+        states.addState(new int[]{}, rounded(normal, radiusDp));
+        return states;
     }
 
     private InsetDrawable insetRounded(int fill, int stroke, int radiusDp) {
