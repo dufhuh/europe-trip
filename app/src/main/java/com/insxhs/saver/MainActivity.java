@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainActivity extends Activity {
     private static final int REQUEST_COOKIES = 1001;
-    private static final String VERSION = "1.4.4";
+    private static final String VERSION = "1.4.5";
 
     private static final int BG = Color.parseColor("#FFFFFF");
     private static final int PANEL = Color.parseColor("#FFFFFF");
@@ -67,6 +67,7 @@ public final class MainActivity extends Activity {
     private EditText urlInput;
     private TextView status;
     private TextView statusDetail;
+    private TextView statusPercent;
     private ImageView statusIcon;
     private LinearLayout downloadStateCard;
     private ProgressBar progress;
@@ -112,16 +113,10 @@ public final class MainActivity extends Activity {
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             int statusBar = insets.getSystemWindowInsetTop();
             int navigationBar = insets.getSystemWindowInsetBottom();
-            view.setPadding(
-                    dp(20),
-                    statusBar + dp(4),
-                    dp(20),
-                    Math.max(dp(30), navigationBar + dp(18)));
+            view.setPadding(dp(20), statusBar + dp(4), dp(20), Math.max(dp(30), navigationBar + dp(18)));
             return insets;
         });
-        scroll.addView(root, new ScrollView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
+        scroll.addView(root, new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.requestApplyInsets();
 
         root.addView(buildTopBar());
@@ -142,7 +137,6 @@ public final class MainActivity extends Activity {
         recentList.setOrientation(LinearLayout.VERTICAL);
         add(root, recentList, 9);
         renderRecent();
-
         setContentView(scroll);
     }
 
@@ -150,6 +144,7 @@ public final class MainActivity extends Activity {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setMinimumHeight(dp(54));
 
         ImageView settings = icon(R.drawable.ic_settings, 20);
         settings.setPadding(dp(10), dp(10), dp(10), dp(10));
@@ -174,16 +169,12 @@ public final class MainActivity extends Activity {
         hero.setOrientation(LinearLayout.VERTICAL);
         hero.setGravity(Gravity.START);
         hero.setPadding(dp(4), 0, dp(4), 0);
-
         TextView title = text("Instagram Downloader", 28, true, TEXT);
         title.setGravity(Gravity.START);
         title.setIncludeFontPadding(false);
         title.setLetterSpacing(-0.02f);
         hero.addView(title);
-
-        TextView subtitle = text(
-                "Paste a link to download all images from Instagram posts and carousels.",
-                14, false, MUTED);
+        TextView subtitle = text("Paste a link to download all images from Instagram posts and carousels.", 14, false, MUTED);
         subtitle.setGravity(Gravity.START);
         subtitle.setLineSpacing(0f, 1.42f);
         add(hero, subtitle, 9);
@@ -197,7 +188,6 @@ public final class MainActivity extends Activity {
         shell.setMinimumHeight(dp(60));
         shell.setBackground(insetRounded(PANEL, LINE_STRONG, 26));
         shell.setPadding(dp(12), dp(7), dp(8), dp(7));
-
         ImageView linkIcon = softIcon(R.drawable.ic_link, 34, 18, 13);
         shell.addView(linkIcon, new LinearLayout.LayoutParams(dp(34), dp(34)));
 
@@ -232,24 +222,16 @@ public final class MainActivity extends Activity {
         button.setMinimumHeight(dp(56));
         button.setElevation(0f);
         button.setStateListAnimator(null);
-
         StateListDrawable states = new StateListDrawable();
-        states.addState(
-                new int[]{-android.R.attr.state_enabled},
-                insetRounded(Color.parseColor("#F7F7F7"), Color.parseColor("#ECECEC"), 24));
-        states.addState(
-                new int[]{android.R.attr.state_pressed},
-                insetRounded(PANEL_PRESSED, LINE_STRONG, 24));
+        states.addState(new int[]{-android.R.attr.state_enabled}, insetRounded(PANEL_2, Color.parseColor("#ECECEC"), 24));
+        states.addState(new int[]{android.R.attr.state_pressed}, insetRounded(PANEL_PRESSED, LINE_STRONG, 24));
         states.addState(new int[]{}, insetRounded(PANEL_2, LINE_STRONG, 24));
         button.setBackground(states);
-
         ImageView download = icon(R.drawable.ic_download, 18);
         button.addView(download, new LinearLayout.LayoutParams(dp(20), dp(20)));
-
         TextView label = text("Download", 15, true, TEXT);
         label.setIncludeFontPadding(false);
-        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         labelParams.leftMargin = dp(9);
         button.addView(label, labelParams);
         return button;
@@ -257,37 +239,48 @@ public final class MainActivity extends Activity {
 
     private LinearLayout buildDownloadState() {
         LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(14), dp(14), dp(14), dp(14));
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding(dp(14), dp(12), dp(14), dp(12));
         card.setBackground(insetRounded(PANEL_2, LINE, 22));
         card.setVisibility(View.GONE);
 
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
-        card.addView(top, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        statusIcon = softIcon(R.drawable.ic_download, 34, 18, 12);
-        top.addView(statusIcon, new LinearLayout.LayoutParams(dp(34), dp(34)));
+        statusIcon = softIcon(R.drawable.ic_download, 34, 17, 13);
+        statusIcon.setImageTintList(ColorStateList.valueOf(MUTED));
+        card.addView(statusIcon, new LinearLayout.LayoutParams(dp(34), dp(34)));
 
         LinearLayout copy = new LinearLayout(this);
         copy.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams copyParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        copyParams.leftMargin = dp(12);
-        top.addView(copy, copyParams);
+        copy.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams copyParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        copyParams.leftMargin = dp(11);
+        card.addView(copy, copyParams);
 
-        status = text("", 13, true, TEXT);
+        LinearLayout titleRow = new LinearLayout(this);
+        titleRow.setOrientation(LinearLayout.HORIZONTAL);
+        titleRow.setGravity(Gravity.CENTER_VERTICAL);
+        copy.addView(titleRow, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        status = text("", 14, true, TEXT);
         status.setIncludeFontPadding(false);
         status.setTextIsSelectable(true);
-        copy.addView(status);
+        status.setSingleLine(true);
+        status.setEllipsize(TextUtils.TruncateAt.END);
+        titleRow.addView(status, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        statusPercent = text("", 12, false, MUTED);
+        statusPercent.setIncludeFontPadding(false);
+        statusPercent.setGravity(Gravity.END);
+        LinearLayout.LayoutParams percentParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        percentParams.leftMargin = dp(8);
+        titleRow.addView(statusPercent, percentParams);
 
         statusDetail = text("", 12, false, MUTED);
         statusDetail.setIncludeFontPadding(false);
+        statusDetail.setSingleLine(true);
+        statusDetail.setEllipsize(TextUtils.TruncateAt.END);
         statusDetail.setVisibility(View.GONE);
-        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         detailParams.topMargin = dp(3);
         copy.addView(statusDetail, detailParams);
 
@@ -297,10 +290,9 @@ public final class MainActivity extends Activity {
         progress.setProgressTintList(ColorStateList.valueOf(TEXT));
         progress.setProgressBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#DEDEDE")));
         progress.setIndeterminateTintList(ColorStateList.valueOf(TEXT));
-        LinearLayout.LayoutParams progressParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(4));
-        progressParams.topMargin = dp(12);
-        card.addView(progress, progressParams);
+        LinearLayout.LayoutParams progressParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3));
+        progressParams.topMargin = dp(8);
+        copy.addView(progress, progressParams);
         return card;
     }
 
@@ -308,27 +300,14 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         card.setBackground(insetRounded(PANEL, LINE, 26));
-
-        View instagram = actionRow(
-                R.drawable.ic_instagram,
-                "Open Instagram",
-                "Share a post to INSDL from Instagram",
-                MUTED);
+        View instagram = actionRow(R.drawable.ic_instagram, "Open Instagram", "Share a post to INSDL from Instagram", MUTED);
         instagram.setOnClickListener(v -> openInstagram());
-        card.addView(instagram, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(72)));
-
-        addDivider(card, 62, 14);
-
+        card.addView(instagram, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72)));
+        addDivider(card, 64, 14);
         boolean valid = cookieStore.existsAndValid();
-        View cookies = actionRow(
-                R.drawable.ic_cookie,
-                "Cookies",
-                valid ? "Valid" : "Not imported",
-                valid ? GREEN : MUTED);
+        View cookies = actionRow(R.drawable.ic_cookie, "Cookies", valid ? "Valid" : "Not imported", valid ? GREEN : MUTED);
         cookies.setOnClickListener(v -> chooseCookieFile());
-        card.addView(cookies, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(72)));
+        card.addView(cookies, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(72)));
         return card;
     }
 
@@ -339,33 +318,25 @@ public final class MainActivity extends Activity {
         row.setPadding(dp(14), 0, dp(14), 0);
         row.setClickable(true);
         row.setFocusable(true);
-        row.setBackground(pressedRounded(Color.TRANSPARENT, Color.parseColor("#FAFAFA"), 0));
-
+        row.setBackground(pressedRounded(Color.TRANSPARENT, Color.parseColor("#FAFAFA"), 18));
         ImageView itemIcon = softIcon(iconRes, 38, 20, 14);
         row.addView(itemIcon, new LinearLayout.LayoutParams(dp(38), dp(38)));
-
         LinearLayout labels = new LinearLayout(this);
         labels.setOrientation(LinearLayout.VERTICAL);
         labels.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams labelsParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        LinearLayout.LayoutParams labelsParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         labelsParams.leftMargin = dp(12);
         row.addView(labels, labelsParams);
-
         TextView title = text(titleText, 14, true, TEXT);
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
         title.setIncludeFontPadding(false);
         labels.addView(title);
-
-        if (subtitleText != null && !subtitleText.isEmpty()) {
-            TextView subtitle = text(subtitleText, 12, false, subtitleColor);
-            subtitle.setSingleLine(true);
-            subtitle.setEllipsize(TextUtils.TruncateAt.END);
-            subtitle.setIncludeFontPadding(false);
-            add(labels, subtitle, 3);
-        }
-
+        TextView subtitle = text(subtitleText, 12, false, subtitleColor);
+        subtitle.setSingleLine(true);
+        subtitle.setEllipsize(TextUtils.TruncateAt.END);
+        subtitle.setIncludeFontPadding(false);
+        add(labels, subtitle, 3);
         ImageView chevron = icon(R.drawable.ic_chevron_right, 17);
         row.addView(chevron, new LinearLayout.LayoutParams(dp(18), dp(18)));
         return row;
@@ -376,14 +347,17 @@ public final class MainActivity extends Activity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(2), 0, dp(2), 0);
-        row.addView(text("Recent Downloads", 15, true, TEXT),
-                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        TextView title = text("Recent Downloads", 15, true, TEXT);
+        title.setIncludeFontPadding(false);
+        row.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         TextView all = text("View all", 13, false, MUTED);
+        all.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        all.setIncludeFontPadding(false);
         all.setClickable(true);
         all.setFocusable(true);
-        all.setPadding(dp(12), dp(8), 0, dp(8));
+        all.setPadding(dp(12), 0, 0, 0);
         all.setOnClickListener(v -> showDownloads());
-        row.addView(all);
+        row.addView(all, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)));
         return row;
     }
 
@@ -398,65 +372,51 @@ public final class MainActivity extends Activity {
             empty.setGravity(Gravity.CENTER_VERTICAL);
             empty.setPadding(dp(14), 0, dp(14), 0);
             empty.setBackground(insetRounded(Color.parseColor("#FBFBFB"), Color.parseColor("#ECECEC"), 26));
-
             ImageView emptyIcon = softIcon(R.drawable.ic_image, 40, 20, 14);
             empty.addView(emptyIcon, new LinearLayout.LayoutParams(dp(40), dp(40)));
-
             LinearLayout copy = new LinearLayout(this);
             copy.setOrientation(LinearLayout.VERTICAL);
-            LinearLayout.LayoutParams copyParams = new LinearLayout.LayoutParams(
-                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            copy.setGravity(Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams copyParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
             copyParams.leftMargin = dp(12);
             empty.addView(copy, copyParams);
-
             TextView title = text("No downloads yet", 14, true, TEXT);
             title.setIncludeFontPadding(false);
             copy.addView(title);
             TextView subtitle = text("Completed downloads will appear here.", 12, false, MUTED);
             subtitle.setIncludeFontPadding(false);
             add(copy, subtitle, 3);
-
-            recentList.addView(empty, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(80)));
+            recentList.addView(empty, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(80)));
             return;
         }
-
         int count = prefs.getInt("last_count", 0);
         String time = prefs.getString("last_time", "");
-
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setBackground(insetRounded(PANEL, LINE, 26));
         card.setPadding(dp(14), 0, dp(14), 0);
-
         ImageView thumbnail = softIcon(R.drawable.ic_image, 40, 20, 14);
         card.addView(thumbnail, new LinearLayout.LayoutParams(dp(40), dp(40)));
-
         LinearLayout details = new LinearLayout(this);
         details.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        details.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         detailsParams.leftMargin = dp(12);
         card.addView(details, detailsParams);
-
         TextView idText = text(id, 14, true, TEXT);
         idText.setSingleLine(true);
         idText.setEllipsize(TextUtils.TruncateAt.END);
         idText.setIncludeFontPadding(false);
         details.addView(idText);
-
         TextView meta = text(count + " files  ·  " + time, 12, false, MUTED);
         meta.setIncludeFontPadding(false);
         add(details, meta, 3);
-
         ImageView done = softIcon(R.drawable.ic_check, 30, 15, 11);
         done.setBackground(rounded(GREEN_BG, 11));
         done.setImageTintList(ColorStateList.valueOf(GREEN));
         card.addView(done, new LinearLayout.LayoutParams(dp(30), dp(30)));
-
-        recentList.addView(card, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(80)));
+        recentList.addView(card, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(80)));
     }
 
     private void handleIntent(Intent intent) {
@@ -494,7 +454,7 @@ public final class MainActivity extends Activity {
             else recreate();
         } catch (IOException exception) {
             cookieStore.clear();
-            setStatus(exception.getMessage(), true);
+            showErrorState("Cookie import failed", safeMessage(exception));
         }
     }
 
@@ -505,56 +465,40 @@ public final class MainActivity extends Activity {
         }
         if (TextUtils.isEmpty(sharedText) || sharedText.trim().isEmpty()) {
             busy.set(false);
-            setStatus("Paste an Instagram link first.", true);
+            showErrorState("Paste an Instagram link first", "The link field is empty.");
             return;
         }
         if (!cookieStore.existsAndValid()) {
             busy.set(false);
             pendingSharedText = sharedText;
-            setStatus("Import a cookies.txt containing sessionid.", true);
+            showErrorState("Cookies required", "Import a cookies.txt containing sessionid.");
             chooseCookieFile();
             return;
         }
-
         setControlsEnabled(false);
-        progress.setVisibility(View.VISIBLE);
-        progress.setIndeterminate(true);
-        setStatus("Reading post…", false);
+        showRunningState("Reading post…", "", -1, -1, true);
         log.reset();
-
         executor.execute(() -> {
             try {
                 InstagramClient client = new InstagramClient(cookieStore, log);
                 String normalizedUrl = client.extractPostUrl(sharedText);
                 runOnUiThread(() -> urlInput.setText(normalizedUrl));
                 InstagramClient.Post post = client.fetchPost(normalizedUrl);
-                runOnUiThread(() -> {
-                    progress.setIndeterminate(false);
-                    progress.setMax(post.media.size());
-                    progress.setProgress(0);
-                });
-
+                runOnUiThread(() -> showRunningState("Found media", post.media.size() + (post.media.size() == 1 ? " file" : " files"), 0, post.media.size(), false));
                 MediaSaver saver = new MediaSaver(this, client, log);
-                int count = saver.savePost(post, (completed, total, message) -> runOnUiThread(() -> {
-                    progress.setIndeterminate(false);
-                    progress.setMax(total);
-                    progress.setProgress(completed);
-                    setStatus(message, false);
-                }));
-
+                int count = saver.savePost(post, (completed, total, message) -> runOnUiThread(() -> showRunningState(message, "Pictures/INSDL/" + post.shortcode, completed, total, false)));
                 saveLastDownload(post.shortcode, count);
                 runOnUiThread(() -> {
-                    progress.setProgress(count);
-                    setStatus("Completed · Pictures/INSDL/" + post.shortcode, false);
+                    showCompletedState("Pictures/INSDL/" + post.shortcode);
                     renderRecent();
                     toast("Saved " + count + " files");
                 });
             } catch (IOException | JSONException exception) {
                 log.line("ERROR: " + exception.getClass().getSimpleName() + ": " + exception.getMessage());
-                runOnUiThread(() -> setStatus("Download failed: " + safeMessage(exception), true));
+                runOnUiThread(() -> showErrorState("Download failed", safeMessage(exception)));
             } catch (RuntimeException exception) {
                 log.line("ERROR: " + exception.getClass().getSimpleName() + ": " + exception.getMessage());
-                runOnUiThread(() -> setStatus("Unexpected error. Copy diagnostic log.", true));
+                runOnUiThread(() -> showErrorState("Unexpected error", "Copy diagnostic log for details."));
             } finally {
                 busy.set(false);
                 runOnUiThread(() -> setControlsEnabled(true));
@@ -564,11 +508,7 @@ public final class MainActivity extends Activity {
 
     private void saveLastDownload(String id, int count) {
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
-        getSharedPreferences("history", MODE_PRIVATE).edit()
-                .putString("last_id", id)
-                .putInt("last_count", count)
-                .putString("last_time", time)
-                .apply();
+        getSharedPreferences("history", MODE_PRIVATE).edit().putString("last_id", id).putInt("last_count", count).putString("last_time", time).apply();
     }
 
     private void showDownloads() {
@@ -580,26 +520,21 @@ public final class MainActivity extends Activity {
         }
         int count = prefs.getInt("last_count", 0);
         String time = prefs.getString("last_time", "");
-
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
-
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(14), dp(12), dp(14), dp(12));
         row.setBackground(insetRounded(PANEL, LINE, 24));
-
-        ImageView thumbnail = softIcon(R.drawable.ic_image, 42, 20, 14);
-        row.addView(thumbnail, new LinearLayout.LayoutParams(dp(42), dp(42)));
-
+        ImageView thumbnail = softIcon(R.drawable.ic_image, 40, 20, 14);
+        row.addView(thumbnail, new LinearLayout.LayoutParams(dp(40), dp(40)));
         LinearLayout details = new LinearLayout(this);
         details.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        details.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         detailParams.leftMargin = dp(12);
         row.addView(details, detailParams);
-
         TextView idView = text(id, 14, true, TEXT);
         idView.setIncludeFontPadding(false);
         details.addView(idView);
@@ -609,9 +544,7 @@ public final class MainActivity extends Activity {
         TextView path = text("Pictures/INSDL/" + id, 12, false, MUTED);
         path.setIncludeFontPadding(false);
         add(details, path, 3);
-
-        list.addView(row, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        list.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         showCustomDialog("Downloads", list);
     }
 
@@ -619,67 +552,51 @@ public final class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
         list.setBackground(insetRounded(PANEL, LINE, 24));
-
         boolean valid = cookieStore.existsAndValid();
-        View cookies = dialogRow("Cookies", valid ? "Valid" : "Not imported", valid ? GREEN : MUTED, false);
+        View cookies = dialogRow("Cookies", valid ? "Valid" : "Not imported", valid ? GREEN : MUTED, false, true);
         cookies.setOnClickListener(v -> chooseCookieFile());
-        list.addView(cookies, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
+        list.addView(cookies, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
         addDialogDivider(list);
-
-        list.addView(dialogRow("Save path", "Pictures/INSDL/", MUTED, false), new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
+        list.addView(dialogRow("Save path", "Pictures/INSDL/", MUTED, false, false), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
         addDialogDivider(list);
-
-        list.addView(dialogRow("Version", VERSION, MUTED, false), new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
+        list.addView(dialogRow("Version", VERSION, MUTED, false, false), new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
         addDialogDivider(list);
-
-        View copy = dialogRow("Copy diagnostic log", "›", MUTED, false);
+        View copy = dialogRow("Copy diagnostic log", "›", MUTED, false, true);
         copy.setOnClickListener(v -> copyDiagnosticLog());
-        list.addView(copy, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
+        list.addView(copy, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
         addDialogDivider(list);
-
-        View clear = dialogRow("Clear cookies", "›", RED, true);
+        View clear = dialogRow("Clear cookies", "›", RED, true, true);
         clear.setOnClickListener(v -> {
             cookieStore.clear();
             toast("Cookies cleared");
             recreate();
         });
-        list.addView(clear, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
-
+        list.addView(clear, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(64)));
         showCustomDialog("Settings", list);
     }
 
-    private View dialogRow(String name, String value, int valueColor, boolean danger) {
+    private View dialogRow(String name, String value, int valueColor, boolean danger, boolean interactive) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(14), 0, dp(14), 0);
-        row.setClickable(true);
-        row.setFocusable(true);
-        row.setBackground(pressedRounded(Color.TRANSPARENT, Color.parseColor("#FAFAFA"), 0));
-
+        row.setClickable(interactive);
+        row.setFocusable(interactive);
+        row.setBackground(interactive ? pressedRounded(Color.TRANSPARENT, Color.parseColor("#FAFAFA"), 16) : rounded(Color.TRANSPARENT, 0));
         TextView nameView = text(name, 14, false, danger ? RED : TEXT);
         nameView.setIncludeFontPadding(false);
-        row.addView(nameView, new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
+        row.addView(nameView, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         TextView valueView = text(value, 13, false, valueColor);
         valueView.setIncludeFontPadding(false);
         valueView.setGravity(Gravity.END);
-        row.addView(valueView, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        row.addView(valueView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         return row;
     }
 
     private void addDialogDivider(LinearLayout parent) {
         View divider = new View(this);
         divider.setBackgroundColor(LINE);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
         params.leftMargin = dp(14);
         params.rightMargin = dp(14);
         parent.addView(divider, params);
@@ -689,20 +606,15 @@ public final class MainActivity extends Activity {
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding(dp(10), dp(10), dp(10), dp(10));
-        container.setBackground(rounded(PANEL, 32));
-
+        container.setBackground(insetRounded(PANEL, LINE, 32));
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
-        header.setPadding(dp(10), 0, dp(4), 0);
-        container.addView(header, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(56)));
-
+        header.setPadding(dp(10), 0, dp(2), 0);
+        container.addView(header, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)));
         TextView title = text(titleText, 18, true, TEXT);
         title.setIncludeFontPadding(false);
-        header.addView(title, new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
+        header.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         TextView close = text("×", 24, false, TEXT);
         close.setGravity(Gravity.CENTER);
         close.setIncludeFontPadding(false);
@@ -710,17 +622,13 @@ public final class MainActivity extends Activity {
         close.setFocusable(true);
         close.setContentDescription("Close");
         close.setBackground(pressedRounded(Color.TRANSPARENT, PANEL_2, 14));
-        header.addView(close, new LinearLayout.LayoutParams(dp(40), dp(40)));
-
-        container.addView(body, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
+        header.addView(close, new LinearLayout.LayoutParams(dp(44), dp(44)));
+        container.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         AlertDialog dialog = new AlertDialog.Builder(this).create();
         dialog.setView(container);
         close.setOnClickListener(v -> dialog.dismiss());
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
-
         Window window = dialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -761,42 +669,74 @@ public final class MainActivity extends Activity {
     }
 
     private void setStatus(String message, boolean error) {
-        if (status == null || downloadStateCard == null) return;
         String safe = message == null ? "" : message.trim();
         if (safe.isEmpty()) {
-            downloadStateCard.setVisibility(View.GONE);
+            if (downloadStateCard != null) downloadStateCard.setVisibility(View.GONE);
             return;
         }
+        if (error) showErrorState("Download failed", safe);
+        else showNoticeState(safe);
+    }
 
-        boolean completed = safe.startsWith("Completed · ");
-        String titleText = safe;
-        String detailText = "";
-
-        if (completed) {
-            titleText = "Completed";
-            detailText = safe.substring("Completed · ".length());
-        } else if (error && safe.startsWith("Download failed: ")) {
-            titleText = "Download failed";
-            detailText = safe.substring("Download failed: ".length());
-        }
-
-        status.setText(titleText);
-        status.setTextColor(error ? RED : (completed ? GREEN : TEXT));
-        statusDetail.setText(detailText);
-        statusDetail.setTextColor(error ? RED : MUTED);
-        statusDetail.setVisibility(detailText.isEmpty() ? View.GONE : View.VISIBLE);
-
-        int fill = error ? RED_BG : (completed ? GREEN_BG : PANEL_2);
-        int stroke = error ? Color.parseColor("#F1D7D2") : (completed ? Color.parseColor("#DBEEDD") : LINE);
-        downloadStateCard.setBackground(insetRounded(fill, stroke, 22));
-
-        statusIcon.setImageTintList(ColorStateList.valueOf(error ? RED : (completed ? GREEN : MUTED)));
-        statusIcon.setBackground(rounded(
-                error ? Color.parseColor("#F8DDDA") : (completed ? Color.parseColor("#DFF0E3") : Color.parseColor("#EAEAEA")),
-                12));
-
-        progress.setVisibility(!error && !completed && busy.get() ? View.VISIBLE : View.GONE);
+    private void showNoticeState(String titleText) {
+        applyStateFrame(PANEL_2, LINE, R.drawable.ic_download, MUTED, Color.parseColor("#EAEAEA"));
+        setStateText(titleText, "", "");
+        progress.setVisibility(View.GONE);
         downloadStateCard.setVisibility(View.VISIBLE);
+    }
+
+    private void showRunningState(String titleText, String detailText, int completed, int total, boolean indeterminate) {
+        applyStateFrame(PANEL_2, LINE, R.drawable.ic_download, MUTED, Color.parseColor("#EAEAEA"));
+        String percentText = "";
+        if (!indeterminate && total > 0 && completed >= 0) {
+            int percentValue = Math.max(0, Math.min(100, Math.round(completed * 100f / total)));
+            percentText = percentValue + "%";
+            progress.setIndeterminate(false);
+            progress.setMax(100);
+            progress.setProgress(percentValue);
+        } else {
+            progress.setIndeterminate(true);
+        }
+        setStateText(titleText, detailText, percentText);
+        progress.setVisibility(View.VISIBLE);
+        downloadStateCard.setVisibility(View.VISIBLE);
+    }
+
+    private void showCompletedState(String path) {
+        applyStateFrame(GREEN_BG, Color.parseColor("#DBEEDD"), R.drawable.ic_check, GREEN, Color.parseColor("#DFF0E3"));
+        setStateText("Completed", path, "");
+        progress.setIndeterminate(false);
+        progress.setVisibility(View.GONE);
+        downloadStateCard.setVisibility(View.VISIBLE);
+    }
+
+    private void showErrorState(String titleText, String detailText) {
+        applyStateFrame(RED_BG, Color.parseColor("#F1D7D2"), R.drawable.ic_error, RED, Color.parseColor("#F8DDDA"));
+        setStateText(titleText, detailText, "");
+        progress.setIndeterminate(false);
+        progress.setVisibility(View.GONE);
+        downloadStateCard.setVisibility(View.VISIBLE);
+    }
+
+    private void applyStateFrame(int fill, int stroke, int iconRes, int iconTint, int iconFill) {
+        downloadStateCard.setBackground(insetRounded(fill, stroke, 22));
+        downloadStateCard.setPadding(dp(14), dp(12), dp(14), dp(12));
+        statusIcon.setImageResource(iconRes);
+        statusIcon.setImageTintList(ColorStateList.valueOf(iconTint));
+        statusIcon.setBackground(rounded(iconFill, 13));
+    }
+
+    private void setStateText(String titleText, String detailText, String percentText) {
+        status.setText(titleText == null ? "" : titleText);
+        status.setTextColor(TEXT);
+        String detail = detailText == null ? "" : detailText.trim();
+        statusDetail.setText(detail);
+        statusDetail.setTextColor(MUTED);
+        statusDetail.setVisibility(detail.isEmpty() ? View.GONE : View.VISIBLE);
+        String percent = percentText == null ? "" : percentText.trim();
+        statusPercent.setText(percent);
+        statusPercent.setTextColor(MUTED);
+        statusPercent.setVisibility(percent.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private ImageView icon(int drawableRes, int visualDp) {
@@ -849,9 +789,7 @@ public final class MainActivity extends Activity {
     }
 
     private void add(LinearLayout parent, View view, int topDp) {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.topMargin = dp(topDp);
         parent.addView(view, params);
     }
@@ -859,8 +797,7 @@ public final class MainActivity extends Activity {
     private void addDivider(LinearLayout parent, int leftDp, int rightDp) {
         View divider = new View(this);
         divider.setBackgroundColor(LINE);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
         params.leftMargin = dp(leftDp);
         params.rightMargin = dp(rightDp);
         parent.addView(divider, params);
@@ -876,8 +813,6 @@ public final class MainActivity extends Activity {
 
     private static String safeMessage(Exception exception) {
         String message = exception.getMessage();
-        return message == null || message.trim().isEmpty()
-                ? exception.getClass().getSimpleName()
-                : message;
+        return message == null || message.trim().isEmpty() ? exception.getClass().getSimpleName() : message;
     }
 }
