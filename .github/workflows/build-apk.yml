@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout
@@ -45,12 +45,21 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/INSDL-debug.apk
-          sha256sum dist/INSDL-debug.apk > dist/INSDL-debug.apk.sha256
+          cp app/build/outputs/apk/debug/app-debug.apk dist/INSDL-v1.4.5-debug.apk
+          sha256sum dist/INSDL-v1.4.5-debug.apk > dist/INSDL-v1.4.5-debug.apk.sha256
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: INSDL-debug-apk
+          name: INSDL-v1.4.5-debug-apk
           path: dist/*
           if-no-files-found: error
+
+      - name: Publish APK to repository
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/INSDL-v1.4.5-debug.apk dist/INSDL-v1.4.5-debug.apk.sha256
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish INSDL v1.4.5 debug APK [skip ci]'
+          git push
